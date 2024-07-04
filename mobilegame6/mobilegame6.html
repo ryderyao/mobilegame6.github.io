@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<!--
+Created using JS Bin
+http://jsbin.com
+
+Copyright (c) 2024 by anonymous (http://jsbin.com/nexotinefu/1/edit)
+
+Released under the MIT license: http://jsbin.mit-license.org
+-->
+<meta name="robots" content="noindex">
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國小生教育遊戲</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 10px;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            font-size: 24px;
+        }
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+        .game-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .game-title {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .play-button, .control-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .game-container {
+            display: none;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        /* 數獨遊戲特定樣式 */
+        #sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 1px;
+            margin: 20px auto;
+            width: 100%;
+            max-width: 450px;
+            aspect-ratio: 1 / 1;
+            background-color: #000;
+        }
+        .sudoku-cell {
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .sudoku-cell:nth-child(3n) {
+            border-right: 2px solid #000;
+        }
+        .sudoku-cell:nth-child(9n) {
+            border-right: none;
+        }
+        .sudoku-row:nth-child(3n) .sudoku-cell {
+            border-bottom: 2px solid #000;
+        }
+        .fixed {
+            font-weight: bold;
+            color: #333;
+        }
+        .selected {
+            background-color: #e0e0e0;
+        }
+        #number-pad {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .number-button {
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* 記憶配對遊戲特定樣式 */
+        #memory-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 10px;
+            margin: 20px auto;
+            width: 100%;
+            max-width: 400px;
+        }
+        .memory-card {
+            aspect-ratio: 1 / 1;
+            background-color: #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .memory-card:hover {
+            transform: scale(1.05);
+        }
+        .memory-card.flipped {
+            background-color: #fff;
+        }
+        #memory-stats {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        /* 繪畫遊戲特定樣式 */
+        #drawing-controls {
+            margin-bottom: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        #drawing-canvas {
+            border: 1px solid #000;
+            cursor: crosshair;
+            max-width: 100%;
+            height: auto;
+        }
+        #color-picker, #brush-size {
+            margin-right: 10px;
+        }
+        #size-display {
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* 數學遊戲特定樣式 */
+        #timer {
+            font-size: 20px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #question-display {
+            font-size: 20px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        #math-input {
+            font-size: 16px;
+            padding: 5px 10px;
+            margin-right: 10px;
+            width: calc(100% - 100px);
+            max-width: 200px;
+        }
+        #math-submit {
+            font-size: 16px;
+            padding: 5px 10px;
+        }
+        #math-result {
+            font-size: 18px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        /* 拼圖遊戲特定樣式 */
+        #puzzle-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            margin: 20px auto;
+            width: 100%;
+            max-width: 300px;
+            aspect-ratio: 1 / 1;
+            background-color: #000;
+        }
+        .puzzle-piece {
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* 迷宮遊戲特定樣式 */
+        #maze-board {
+            display: grid;
+            gap: 1px;
+            margin: 20px auto;
+            width: 100%;
+            max-width: 300px;
+            aspect-ratio: 1 / 1;
+            background-color: #000;
+        }
+        .maze-cell {
+            background-color: #fff;
+            transition: background-color 0.3s;
+        }
+        .maze-wall {
+            background-color: #333;
+        }
+        .maze-player {
+            background-color: #4CAF50;
+            border-radius: 50%;
+        }
+        .maze-goal {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>國小生教育遊戲</h1>
+        <div class="game-grid">
+            <div class="game-card">
+                <h2 class="game-title">數獨遊戲</h2>
+                <button class="play-button" onclick="showGame('sudoku')">開始遊戲</button>
+            </div>
+            <div class="game-card">
+                <h2 class="game-title">記憶配對遊戲</h2>
+                <button class="play-button" onclick="showGame('memory')">開始遊戲</button>
+            </div>
+            <div class="game-card">
+                <h2 class="game-title">繪畫遊戲</h2>
+                <button class="play-button" onclick="showGame('drawing')">開始遊戲</button>
+            </div>
+            <div class="game-card">
+                <h2 class="game-title">迷宮遊戲</h2>
+                <button class="play-button" onclick="showGame('maze')">開始遊戲</button>
+            </div>
+            <div class="game-card">
+                <h2 class="game-title">拼圖遊戲</h2>
+                <button class="play-button" onclick="showGame('puzzle')">開始遊戲</button>
+            </div>
+            <div class="game-card">
+                <h2 class="game-title">數學遊戲</h2>
+                <button class="play-button" onclick="showGame('math')">開始遊戲</button>
+            </div>
+        </div>
+
+        <!-- 數獨遊戲容器 -->
+        <div id="sudoku" class="game-container">
+            <h2>數獨遊戲</h2>
+            <p>遊戲規則：填充9x9的網格，使每行、每列和每個3x3的子網格都包含數字1-9，且不重複。</p>
+            <div id="sudoku-board"></div>
+            <div id="number-pad"></div>
+            <button class="control-button" onclick="restartGame('sudoku')">重新開始</button>
+            <button class="control-button" onclick="backToMenu()">返回選單</button>
+        </div>
+
+        <!-- 記憶配對遊戲容器 -->
+        <div id="memory" class="game-container">
+            <h2>記憶配對遊戲</h2>
+            <p>遊戲規則：翻開卡片並找到配對。記住卡片的位置，盡可能用最少的次數完成所有配對。</p>
+            <div id="memory-board"></div>
+            <div id="memory-stats">翻牌次數：<span id="flip-count">0</span></div>
+            <button class="control-button" onclick="restartGame('memory')">重新開始</button>
+            <button class="control-button" onclick="backToMenu()">返回選單</button>
+        </div>
+
+        <!-- 繪畫遊戲容器 -->
+        <div id="drawing" class="game-container">
+            <h2>繪畫遊戲</h2>
+            <p>遊戲規則：使用滑鼠或手指在畫布上自由繪畫。你可以更改顏色和筆刷大小。</p>
+            <div id="drawing-controls">
+                <input type="color" id="color-picker" value="#000000">
+                <input type="range" id="brush-size" min="1" max="20" value="5">
+                <span id="size-display">5</span>
+                <button onclick="clearCanvas()">清除畫布</button>
+            </div>
+            <canvas id="drawing-canvas" width="500" height="400"></canvas>
+            <button class="control-button" onclick="restartGame('drawing')">重新開始</button>
+            <button class="control-button" onclick="backToMenu()">返回選單</button>
+        </div>
+
+        <!-- 數學遊戲容器 -->
+        <div id="math" class="game-container">
+            <h2>數學遊戲</h2>
+            <p>遊戲規則：在60秒內回答盡可能多的數學問題。</p>
+            <div id="timer">剩餘時間：60秒</div>
+            <div id="question-display"></div>
+            <input type="number" id="math-input" placeholder="輸入答案">
+            <button id="math-submit" onclick="checkAnswer()">提交</button>
+            <div id="math-result"></div>
+            <div id="math-stats">
+                正確: <span id="math-correct">0</span> | 
+                錯誤: <span id="math-incorrect">0</span>
+            </div>
+            <button class="control-button" onclick="restartGame('math')">重新開始</button>
+            <button class="control-button" onclick="backToMenu()">返回選單</button>
+        </div>
+
+        <!-- 拼圖遊戲容器 -->
+        <div id="puzzle" class="game-container">
+            <h2>拼圖遊戲</h2>
+            <p>遊戲規則：點擊拼圖塊移動它，將打亂的數字重新排列成正確的順序（1-8）。</p>
+            <div id="puzzle-board"></div>
+            <div id="puzzle-stats">移動次數：<span id="move-count">0</span></div>
+            <button class="control-button" onclick="restartGame('puzzle')">重新開始</button>
+            <button class="control-button" onclick="backToMenu()">返回選單</button>
+        </div>
+
+        <!-- 迷宮遊戲容器 -->
+        <div id="maze" class="game-container">
+            <h2>迷宮遊戲</h2>
+            <p>遊戲規則：使用方向鍵、WASD鍵或滑動屏幕移動綠色玩家，找到通往紅色終點的路徑。</p>
+            <div id="maze-board"></div>
+            <div id="maze-stats">步數：<span id="step-count">0</span></div>
+            <button class="control-button" onclick="restartGame('maze')">重新開始</button>
+            <button class="control-button" onclick="backToMenu()">返回選單</button>
+        </div>
+    </div>
+
+    <script>
+        // ... (保
+      // 全局變量
+let sudokuBoard = [];
+let selectedCell = null;
+let memoryCards = [];
+let flippedCards = [];
+let matchedPairs = 0;
+let flipCount = 0;
+let canFlip = true;
+
+// 繪畫遊戲變量
+let canvas, ctx;
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
+
+// 數學遊戲變量
+let mathCorrectCount = 0;
+let mathIncorrectCount = 0;
+let timeLeft = 60;
+let gameTimer;
+let currentQuestion = '';
+let currentAnswer = 0;
+
+// 拼圖遊戲變量
+let puzzleBoard = [];
+let emptyCell = { row: 2, col: 2 };
+let moveCount = 0;
+
+// 迷宮遊戲變量
+let mazeBoard = [];
+let playerPosition = { row: 0, col: 0 };
+let goalPosition = { row: 0, col: 0 };
+let stepCount = 0;
+
+// 顯示遊戲
+function showGame(gameId) {
+    document.querySelectorAll('.game-container').forEach(container => {
+        container.style.display = 'none';
+    });
+    document.getElementById(gameId).style.display = 'block';
+    if (gameId === 'sudoku') {
+        initSudoku();
+    } else if (gameId === 'memory') {
+        initMemory();
+    } else if (gameId === 'drawing') {
+        initDrawing();
+    } else if (gameId === 'math') {
+        initMath();
+    } else if (gameId === 'puzzle') {
+        initPuzzle();
+    } else if (gameId === 'maze') {
+        initMaze();
+    }
+}
+
+// 返回主選單
+function backToMenu() {
+    document.querySelectorAll('.game-container').forEach(container => {
+        container.style.display = 'none';
+    });
+}
+
+// 重新開始遊戲
+function restartGame(gameId) {
+    if (gameId === 'sudoku') {
+        initSudoku();
+    } else if (gameId === 'memory') {
+        initMemory();
+    } else if (gameId === 'drawing') {
+        clearCanvas();
+    } else if (gameId === 'math') {
+        initMath();
+    } else if (gameId === 'puzzle') {
+        initPuzzle();
+    } else if (gameId === 'maze') {
+        initMaze();
+    }
+}
+
+// 數獨遊戲邏輯
+function initSudoku() {
+    sudokuBoard = generateSudoku();
+    renderSudokuBoard();
+    renderNumberPad();
+}
+
+function generateSudoku() {
+    return [
+        [5,3,0,0,7,0,0,0,0],
+        [6,0,0,1,9,5,0,0,0],
+        [0,9,8,0,0,0,0,6,0],
+        [8,0,0,0,6,0,0,0,3],
+        [4,0,0,8,0,3,0,0,1],
+        [7,0,0,0,2,0,0,0,6],
+        [0,6,0,0,0,0,2,8,0],
+        [0,0,0,4,1,9,0,0,5],
+        [0,0,0,0,8,0,0,7,9]
+    ];
+}
+
+function renderSudokuBoard() {
+    const board = document.getElementById('sudoku-board');
+    board.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            const cell = document.createElement('div');
+            cell.className = 'sudoku-cell';
+            if (sudokuBoard[i][j] !== 0) {
+                cell.textContent = sudokuBoard[i][j];
+                cell.classList.add('fixed');
+            } else {
+                cell.addEventListener('click', () => selectCell(cell, i, j));
+            }
+            board.appendChild(cell);
+        }
+    }
+}
+
+function renderNumberPad() {
+    const pad = document.getElementById('number-pad');
+    pad.innerHTML = '';
+    for (let i = 1; i <= 9; i++) {
+        const button = document.createElement('button');
+        button.className = 'number-button';
+        button.textContent = i;
+        button.addEventListener('click', () => fillNumber(i));
+        pad.appendChild(button);
+    }
+}
+
+function selectCell(cell, row, col) {
+    if (selectedCell) {
+        selectedCell.classList.remove('selected');
+    }
+    selectedCell = cell;
+    cell.classList.add('selected');
+}
+
+function fillNumber(number) {
+    if (selectedCell && !selectedCell.classList.contains('fixed')) {
+        selectedCell.textContent = number;
+    }
+}
+
+// 記憶配對遊戲邏輯
+function initMemory() {
+    memoryCards = ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E', 'F', 'F', 'G', 'G', 'H', 'H'];
+    shuffleArray(memoryCards);
+    renderMemoryBoard();
+    flippedCards = [];
+    matchedPairs = 0;
+    flipCount = 0;
+    canFlip = true;
+    updateFlipCount();
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function renderMemoryBoard() {
+    const board = document.getElementById('memory-board');
+    board.innerHTML = '';
+    memoryCards.forEach((card, index) => {
+        const cardElement = document.createElement('div');
+        cardElement.className = 'memory-card';
+        cardElement.dataset.cardIndex = index;
+        cardElement.addEventListener('click', () => flipCard(cardElement, card));
+        board.appendChild(cardElement);
+    });
+}
+
+function flipCard(cardElement, card) {
+    if (!canFlip || cardElement.classList.contains('flipped')) return;
+
+    cardElement.classList.add('flipped');
+    cardElement.textContent = card;
+    flippedCards.push({element: cardElement, value: card});
+    flipCount++;
+    updateFlipCount();
+
+    if (flippedCards.length === 2) {
+        canFlip = false;
+        setTimeout(checkMatch, 1000);
+    }
+}
+
+function checkMatch() {
+    const [card1, card2] = flippedCards;
+    if (card1.value === card2.value) {
+        matchedPairs++;
+        if (matchedPairs === memoryCards.length / 2) {
+            alert('恭喜你完成了遊戲！總共翻牌 ' + flipCount + ' 次。');
+        }
+    } else {
+        card1.element.classList.remove('flipped');
+        card2.element.classList.remove('flipped');
+        card1.element.textContent = '';
+        card2.element.textContent = '';
+    }
+    flippedCards = [];
+    canFlip = true;
+}
+
+function updateFlipCount() {
+    document.getElementById('flip-count').textContent = flipCount;
+}
+
+// 繪畫遊戲邏輯
+function initDrawing() {
+    canvas = document.getElementById('drawing-canvas');
+    ctx = canvas.getContext('2d');
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    canvas.addEventListener('touchstart', handleTouch);
+    canvas.addEventListener('touchmove', handleTouch);
+    canvas.addEventListener('touchend', stopDrawing);
+
+    document.getElementById('color-picker').addEventListener('change', updateColor);
+    document.getElementById('brush-size').addEventListener('input', updateBrushSize);
+
+    updateColor();
+    updateBrushSize();
+}
+
+function handleTouch(e) {
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent("mousemove", {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+    });
+    canvas.dispatchEvent(mouseEvent);
+    e.preventDefault();
+}
+
+function startDrawing(e) {
+    isDrawing = true;
+    [lastX, lastY] = [e.offsetX, e.offsetY];
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
+    [lastX, lastY] = [e.offsetX, e.offsetY];
+}
+
+function stopDrawing() {
+    isDrawing = false;
+}
+
+function updateColor() {
+    ctx.strokeStyle = document.getElementById('color-picker').value;
+}
+
+function updateBrushSize() {
+    const size = document.getElementById('brush-size').value;
+    ctx.lineWidth = size;
+    document.getElementById('size-display').textContent = size;
+}
+
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// 數學遊戲邏輯
+function initMath() {
+    mathCorrectCount = 0;
+    mathIncorrectCount = 0;
+    timeLeft = 60;
+    updateMathStats();
+    updateTimer();
+    nextQuestion();
+    clearInterval(gameTimer);
+    gameTimer = setInterval(function() {
+        timeLeft--;
+        updateTimer();
+        if (timeLeft <= 0) {
+            endMathGame();
+        }
+    }, 1000);
+}
+
+function nextQuestion() {
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+    const operations = ['+', '-', '*'];
+    const operation = operations[Math.floor(Math.random() * operations.length)];
+    
+    currentQuestion = `${num1} ${operation} ${num2}`;
+    currentAnswer = eval(currentQuestion);
+    
+    document.getElementById('question-display').textContent = currentQuestion + ' = ?';
+    document.getElementById('math-input').value = '';
+    document.getElementById('math-result').textContent = '';
+}
+
+function checkAnswer() {
+    const userInput = parseInt(document.getElementById('math-input').value);
+    const resultElement = document.getElementById('math-result');
+    
+    if (userInput === currentAnswer) {
+        resultElement.textContent = '正確！';
+        resultElement.style.color = 'green';
+        mathCorrectCount++;
+    } else {
+        resultElement.textContent = `錯誤。正確答案是：${currentAnswer}`;
+        resultElement.style.color = 'red';
+        mathIncorrectCount++;
+    }
+    
+    updateMathStats();
+    setTimeout(nextQuestion, 1000);
+}
+
+function updateMathStats() {
+    document.getElementById('math-correct').textContent = mathCorrectCount;
+    document.getElementById('math-incorrect').textContent = mathIncorrectCount;
+}
+
+function updateTimer() {
+    document.getElementById('timer').textContent = `剩餘時間：${timeLeft}秒`;
+}
+
+function endMathGame() {
+    clearInterval(gameTimer);
+    alert(`遊戲結束！\n正確答題：${mathCorrectCount}\n錯誤答題：${mathIncorrectCount}`);
+}
+
+// 拼圖遊戲邏輯
+function initPuzzle() {
+    puzzleBoard = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+    shufflePuzzle();
+    renderPuzzleBoard();
+    moveCount = 0;
+    updateMoveCount();
+}
+
+function shufflePuzzle() {
+    for (let i = puzzleBoard.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [puzzleBoard[i], puzzleBoard[j]] = [puzzleBoard[j], puzzleBoard[i]];
+        if (puzzleBoard[i] === 0) {
+            emptyCell = { row: Math.floor(i / 3), col: i % 3 };
+        }
+    }
+}
+
+function renderPuzzleBoard() {
+    const board = document.getElementById('puzzle-board');
+    board.innerHTML = '';
+    puzzleBoard.forEach((num, index) => {
+        const piece = document.createElement('div');
+        piece.className = 'puzzle-piece';
+        if (num !== 0) {
+            piece.textContent = num;
+            piece.addEventListener('click', () => movePiece(index));
+        }
+        board.appendChild(piece);
+    });
+}
+
+function movePiece(index) {
+    const clickedRow = Math.floor(index / 3);
+    const clickedCol = index % 3;
+    if (isAdjacent(clickedRow, clickedCol)) {
+        const temp = puzzleBoard[emptyCell.row * 3 + emptyCell.col];
+        puzzleBoard[emptyCell.row * 3 + emptyCell.col] = puzzleBoard[index];
+        puzzleBoard[index] = temp;
+        emptyCell = { row: clickedRow, col: clickedCol };
+        moveCount++;
+        updateMoveCount();
+        renderPuzzleBoard();
+        checkWin();
+    }
+}
+
+function isAdjacent(row, col) {
+    return (Math.abs(row - emptyCell.row) + Math.abs(col - emptyCell.col) === 1);
+}
+
+function updateMoveCount() {
+    document.getElementById('move-count').textContent = moveCount;
+}
+
+function checkWin() {
+    if (puzzleBoard.every((num, index) => num === (index + 1) % 9)) {
+        alert(`恭喜你完成了拼圖！總共移動 ${moveCount} 次。`);
+    }
+}
+
+      // 迷宮遊戲邏輯
+function initMaze() {
+    mazeBoard = generateMaze(10, 10);
+    renderMazeBoard();
+    stepCount = 0;
+    updateStepCount();
+    document.addEventListener('keydown', handleKeyPress);
+    
+    // 添加觸摸控制
+    let touchStartX, touchStartY;
+    document.getElementById('maze-board').addEventListener('touchstart', function(e) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    });
+    document.getElementById('maze-board').addEventListener('touchmove', function(e) {
+        e.preventDefault(); // 防止頁面滾動
+        const touchEndX = e.touches[0].clientX;
+        const touchEndY = e.touches[0].clientY;
+        const dx = touchEndX - touchStartX;
+        const dy = touchEndY - touchStartY;
+        
+        if (Math.abs(dx) > Math.abs(dy)) {
+            // 水平滑動
+            if (dx > 0) {
+                movePlayer('right');
+            } else {
+                movePlayer('left');
+            }
+        } else {
+            // 垂直滑動
+            if (dy > 0) {
+                movePlayer('down');
+            } else {
+                movePlayer('up');
+            }
+        }
+        
+        touchStartX = touchEndX;
+        touchStartY = touchEndY;
+    });
+}
+
+function generateMaze(rows, cols) {
+    let maze = Array(rows).fill().map(() => Array(cols).fill(1));
+    let stack = [];
+    playerPosition = { row: 1, col: 1 };
+    goalPosition = { row: rows - 2, col: cols - 2 };
+    
+    function carve(row, col) {
+        maze[row][col] = 0;
+        let directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+        directions.sort(() => Math.random() - 0.5);
+        
+        for (let [dx, dy] of directions) {
+            let newRow = row + dy * 2, newCol = col + dx * 2;
+            if (newRow > 0 && newRow < rows - 1 && newCol > 0 && newCol < cols - 1 && maze[newRow][newCol] === 1) {
+                maze[row + dy][col + dx] = 0;
+                stack.push([newRow, newCol]);
+            }
+        }
+    }
+    
+    carve(1, 1);
+    while (stack.length > 0) {
+        let [row, col] = stack.pop();
+        carve(row, col);
+    }
+    
+    maze[playerPosition.row][playerPosition.col] = 2;
+    maze[goalPosition.row][goalPosition.col] = 3;
+    
+    return maze;
+}
+
+function renderMazeBoard() {
+    const board = document.getElementById('maze-board');
+    board.innerHTML = '';
+    board.style.gridTemplateColumns = `repeat(${mazeBoard[0].length}, 1fr)`;
+    
+    mazeBoard.forEach((row, rowIndex) => {
+        row.forEach((cell, colIndex) => {
+            const cellElement = document.createElement('div');
+            cellElement.className = 'maze-cell';
+            if (cell === 1) {
+                cellElement.classList.add('maze-wall');
+            } else if (cell === 2) {
+                cellElement.classList.add('maze-player');
+            } else if (cell === 3) {
+                cellElement.classList.add('maze-goal');
+            }
+            board.appendChild(cellElement);
+        });
+    });
+}
+
+function handleKeyPress(event) {
+    switch(event.key) {
+        case 'ArrowUp':
+        case 'w':
+            movePlayer('up');
+            break;
+        case 'ArrowDown':
+        case 's':
+            movePlayer('down');
+            break;
+        case 'ArrowLeft':
+        case 'a':
+            movePlayer('left');
+            break;
+        case 'ArrowRight':
+        case 'd':
+            movePlayer('right');
+            break;
+        default:
+            return;
+    }
+}
+
+function movePlayer(direction) {
+    let newRow = playerPosition.row;
+    let newCol = playerPosition.col;
+    
+    switch(direction) {
+        case 'up':
+            newRow--;
+            break;
+        case 'down':
+            newRow++;
+            break;
+        case 'left':
+            newCol--;
+            break;
+        case 'right':
+            newCol++;
+            break;
+    }
+    
+    if (mazeBoard[newRow][newCol] !== 1) {
+        mazeBoard[playerPosition.row][playerPosition.col] = 0;
+        playerPosition = { row: newRow, col: newCol };
+        if (mazeBoard[newRow][newCol] === 3) {
+            alert(`恭喜你到達終點！總共移動 ${stepCount} 步。`);
+            initMaze();
+            return;
+        }
+        mazeBoard[newRow][newCol] = 2;
+        stepCount++;
+        updateStepCount();
+        renderMazeBoard();
+    }
+}
+
+function updateStepCount() {
+    document.getElementById('step-count').textContent = stepCount;
+}
+
+// 初始化頁面
+showGame('memory');
